@@ -1,8 +1,3 @@
-const title = document.querySelector('#title');
-const author = document.querySelector('#author');
-const pages = document.querySelector("#num-pages");
-const read = document.querySelector('#read');
-
 
 let myLibrary = [
   {
@@ -28,25 +23,43 @@ function addBookToLibrary() {
 }
 
 function displayBooks() {
+  
   for(let book of myLibrary) {
+    // Create a card for each book in library
+    let card = document.createElement('div');
+    card.classList.add('card');
+    console.log(card);
+
+    const title = document.createElement('p');
+    const author = document.createElement('p');
+    const pages = document.createElement('p');
+    const read = document.createElement('p');
+
     for(prop in book) {
       switch(prop) {
         case 'title':
           title.innerText = book[prop];
+          card.appendChild(title);
           break;
         case 'author':
-          author.innerText = book[prop];
+          author.innerText =book[prop];
+          card.appendChild(author);
           break;
         case 'pages':
-          pages.innerText = book[prop];
+          pages.innerText = book[prop] + ' pages';
+          card.appendChild(pages);
           break;
         case 'isRead':
           read.innerText = book[prop];
+          card.appendChild(read);
           break;
         default:
           break;
       }
     }
+
+    document.querySelector('.book-container').appendChild(card);
+
   }
 }
 

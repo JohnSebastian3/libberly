@@ -6,14 +6,54 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="assets/css/normalize.css">
   <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dosis:wght@200;300;400&display=swap" rel="stylesheet">
   <title>Document</title>
 </head>
 <body>
-  <h1>Library</h1>
-  <p id="title"></p>
-  <p id="author"></p>
-  <p id="num-pages"></p>
-  <p id="read"></p>
+  <header class="header">
+    <h1 class="title">Libberly</h1>
+    <div class="stats">
+      <p>Books Read: <span></span></p>
+      <p>Pages Read: <span></span></p>
+    </div> 
+  </header>
+
+  <div class="container">
+
+    <div class="add-book">
+      <button type="button" class="button">Add Book</button>
+    </div>
+
+    <div class="book-container">
+    </div>
+
+  </div>
+
+
+  <div class="modal">
+    <h2>Add a new Book!</h2>
+    <form class="form">
+      <div class="input-control">
+        <label for="book-title">Book Title</label>
+        <input type="text" id="book-title" name="book-title"/>
+      </div>
+      <div class="input-control">
+        <label for="book-author">Author</label>
+        <input type="text" id=" book-author" name="book-author"/>
+      </div>
+      <div class="input-control">
+        <label for="book-pages">Number of Pages</label>
+        <input type="number" id="book-pages" name="book-pages" />
+      </div>
+      <div class="input-control">
+        <label for="have-read">I have finished reading this book</label>
+        <input type="checkbox" id="have-read" name="have-read" />
+      </div>
+    </form>
+  </div>
+ 
   <script src="assets/js/main.js"></script>
 </body>
 </html>
