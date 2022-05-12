@@ -1,23 +1,28 @@
 
-const addBookButton = document.querySelector('.add-book');
+const addBookButton = document.querySelector('.add-book-button');
+const removeAllButton = document.querySelector('.remove-all-button');
 const modal = document.querySelector('.modal');
 const submitButton = document.querySelector('#submit');
+const booksRead = document.querySelector('.books-read');
+const pagesRead = document.querySelector('.pages-read');
 
 
 addBookButton.addEventListener('click', requestBook);
 submitButton.addEventListener('click', addBookToLibrary);
+removeAllButton.addEventListener('click', () => {
+  localStorage.clear();
+  document.location.reload();
+});
 
 let currentIndex = 0;
 let myLibrary = JSON.parse(localStorage.getItem('myLibrary')) || [];
+displayStats();
 displayBooks();
 
 
 console.log('My Library: ', myLibrary);
 currentIndex = myLibrary.length - 1;
 console.log('Current index: ', currentIndex);
-// console.log(localStorage);
-// localStorage.setItem('myLibrary', JSON.stringify(myLibrary));
-
 
 function Book(title, author, pages, read) {
   this.title = title;
@@ -27,35 +32,39 @@ function Book(title, author, pages, read) {
 }
 
 function addBookToLibrary() {
-  modal.classList.add('hidden');
+  hideModal();
+
   const bookTitle = document.querySelector('#book-title').value;
   const bookAuthor = document.querySelector('#book-author').value;
   const bookPages = document.querySelector('#book-pages').value;
   const haveRead = document.querySelector('#have-read').value;
 
   const newBook = new Book(bookTitle, bookAuthor, bookPages, haveRead)
-  // console.log('Newbook ', newBook);
-  
-  // console.log('Contains? ', containsBook(newBook, myLibrary));
-  if(myLibrary.length > 0) {
+
+  if(myLibrary.length === 0) {
+    currentIndex++;
+    saveDataToLocalStorage(newBook);
+    incrementBooksRead();
+    updatePagesRead(newBook);
+    displayBooks();
+  } else{
     if(!containsBook(newBook, myLibrary)) {
-      saveDataToLocalStorage(newBook);
       currentIndex++;
+      saveDataToLocalStorage(newBook);
+      incrementBooksRead();
+      updatePagesRead(newBook);
       displayBooks();
     }
-  } else if(myLibrary.length === 0){
-    saveDataToLocalStorage(newBook);
-    currentIndex++;
-    displayBooks();
   }
-  // console.log('LENGTH!!!: ', myLibrary.length);
-  // console.log(localStorage)
+
 }
 
 function displayBooks() {
   
   let books = JSON.parse(localStorage.getItem('myLibrary')) || [];
-  // console.log('Mybooks ', books);
+
+
+  
   for(let i = currentIndex; i < books.length; i++) {
     // Create a card for each book in library
     let card = document.createElement('div');
@@ -80,8 +89,8 @@ function displayBooks() {
           pages.innerText = books[i][prop] + ' pages';
           card.appendChild(pages);
           break;
-        case 'isRead':
-          read.innerText = books[i][prop];
+        case 'read':
+          read.innerText = 'Finished Reading';
           card.appendChild(read);
           break;
         default:
@@ -92,6 +101,26 @@ function displayBooks() {
     document.querySelector('.book-container').appendChild(card);
 
   }
+}
+
+function incrementBooksRead() {
+  let currentBooksRead = Number(localStorage.getItem('booksRead'));
+  currentBooksRead++;
+  localStorage.setItem('booksRead', currentBooksRead);
+  booksRead.innerText = currentBooksRead.toLocaleString();
+}
+
+function updatePagesRead(book) {
+  let currentPagesRead = Number(localStorage.getItem('pagesRead'));
+  currentPagesRead += Number(book.pages);
+  localStorage.setItem('pagesRead', currentPagesRead);
+  pagesRead.innerText = currentPagesRead.toLocaleString();
+} 
+
+function displayStats() {
+  booksRead.innerText =  Number(localStorage.getItem('booksRead')).toLocaleString();
+  pagesRead.innerText =  Number(localStorage.getItem('pagesRead')).toLocaleString();
+
 }
 
 function containsBook(data, library) {
@@ -114,6 +143,10 @@ function containsBook(data, library) {
 function saveDataToLocalStorage(data) {
   myLibrary.push(data);
   localStorage.setItem('myLibrary', JSON.stringify(myLibrary));
+}
+
+function hideModal() {
+  modal.classList.add('hidden');
 }
 
 
