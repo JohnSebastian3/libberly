@@ -15,16 +15,18 @@
   <header class="header">
     <h1 class="title">Libberly</h1>
     <div class="stats">
-      <p>Books Read: <span></span></p>
-      <p>Pages Read: <span></span></p>
+      <p>Books Read: <span class="books-read">0</span></p>
+      <p>Pages Read: <span class="pages-read">0</span></p>
     </div> 
   </header>
 
   <div class="container">
 
-    <div class="add-book">
-      <button type="button" class="button">Add Book</button>
+    <div class="control-buttons">
+      <button type="button" class="button add-book-button">Add Book</button>
+      <button type="button" class="button remove-all-button">Clear All Books</button>
     </div>
+
 
     <div class="book-container">
     </div>
@@ -32,26 +34,26 @@
   </div>
 
 
-  <div class="modal">
+  <div class="modal hidden">
     <h2>Add a new Book!</h2>
     <form class="form">
       <div class="input-control">
         <label for="book-title">Book Title</label>
-        <input type="text" id="book-title" name="book-title"/>
+        <input type="text" id="book-title" name="book-title" required/>
       </div>
       <div class="input-control">
         <label for="book-author">Author</label>
-        <input type="text" id="book-author" name="book-author"/>
+        <input type="text" id="book-author" name="book-author" required/>
       </div>
       <div class="input-control">
         <label for="book-pages">Number of Pages</label>
-        <input type="number" id="book-pages" name="book-pages" />
+        <input type="number" id="book-pages" name="book-pages" required/>
       </div>
       <div class="input-control">
         <label for="have-read">I have finished reading this book</label>
-        <input type="checkbox" id="have-read" name="have-read" />
+        <input type="checkbox" id="have-read" name="have-read" required/>
       </div>
-      <button type="button" id="submit">Add</button>
+      <button type="submit" id="submit">Add</button>
     </form>
   </div>
  
