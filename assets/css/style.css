@@ -32,6 +32,13 @@ body {
   letter-spacing: 3px;
 }
 
+.stats {
+  flex-basis: 20%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 
 /* MAIN CONTAINER */
 
@@ -42,10 +49,13 @@ body {
 }
 
 /* ADD BUTTON CONTAINER */
-.add-book {
+.control-buttons {
   padding: 4rem;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  gap: 4rem;
 }
+
 
 .button {
   border:none;
@@ -54,10 +64,19 @@ body {
   padding: 1rem 3rem;
   border-radius: 5px;
   cursor: pointer;
+  width: 175px;
+}
+
+.remove-all-button {
+  background-color: #d62828;
 }
 
 .button:hover {
   background-color: #6c757d;
+}
+
+.remove-all-button:hover {
+  background-color: #c1121f;
 }
 
 
@@ -99,4 +118,8 @@ body {
   padding: 2rem;
   display: flex;
   flex-direction: column;
+}
+
+.hidden {
+  visibility: hidden;
 }
