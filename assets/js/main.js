@@ -21,12 +21,7 @@ removeAllButton.addEventListener('click', () => {
   document.location.reload();
 });
 
-btnCloseModal.addEventListener('click', () => {
-  modal.classList.add('hidden');
-  overlay.classList.add('hidden');
-  overlay.classList.remove('opaque');
-  modal.classList.remove('opaque');
-})
+btnCloseModal.addEventListener('click', hideModal)
 
 
 
@@ -199,15 +194,17 @@ function displayBooks() {
     document.querySelector('.book-container').appendChild(card);
 
     removeButton.addEventListener('click', e => {
-      let currentPagesRead = Number(localStorage.getItem('pagesRead'));
-      currentPagesRead -= Number(e.target.parentElement.children[2].innerText.split(' ')[0]);
-      localStorage.setItem('pagesRead', currentPagesRead);
-      pagesRead.innerText = currentPagesRead.toLocaleString();
+      if(read.innerText === 'Finished Reading') {
+        let currentPagesRead = Number(localStorage.getItem('pagesRead'));
+        currentPagesRead -= Number(e.target.parentElement.children[2].innerText.split(' ')[0]);
+        localStorage.setItem('pagesRead', currentPagesRead);
+        pagesRead.innerText = currentPagesRead.toLocaleString();
+        decrementBooksRead();
+      }
       const index = e.target.parentElement.getAttribute('data-index');
       const currentLib = JSON.parse(localStorage.getItem('myLibrary'));
       currentLib.splice(index, 1);
       localStorage.setItem('myLibrary', JSON.stringify(currentLib));
-      decrementBooksRead();
       e.target.parentElement.remove();
       myLibrary = JSON.parse(localStorage.getItem('myLibrary'))
       let cards = document.querySelectorAll('.card');
@@ -271,6 +268,9 @@ function saveDataToLocalStorage(data) {
 
 function hideModal() {
   modal.classList.add('hidden');
+  overlay.classList.add('hidden');
+  overlay.classList.remove('opaque');
+  modal.classList.remove('opaque');
 }
 
 function clearInputs() {
