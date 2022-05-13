@@ -9,20 +9,19 @@ const pagesRead = document.querySelector('.pages-read');
 
 addBookButton.addEventListener('click', requestBook);
 submitButton.addEventListener('click', addBookToLibrary);
+
 removeAllButton.addEventListener('click', () => {
   localStorage.clear();
   document.location.reload();
 });
+
 
 let currentIndex = 0;
 let myLibrary = JSON.parse(localStorage.getItem('myLibrary')) || [];
 displayStats();
 displayBooks();
 
-
-console.log('My Library: ', myLibrary);
 currentIndex = myLibrary.length - 1;
-console.log('Current index: ', currentIndex);
 
 function Book(title, author, pages, read) {
   this.title = title;
@@ -37,22 +36,32 @@ function addBookToLibrary() {
   const bookTitle = document.querySelector('#book-title').value;
   const bookAuthor = document.querySelector('#book-author').value;
   const bookPages = document.querySelector('#book-pages').value;
-  const haveRead = document.querySelector('#have-read').value;
+  let haveRead = document.querySelector('#have-read');
+
+  if(haveRead.checked) {
+    haveRead = 'Finished Reading';
+  } else {
+    haveRead = 'Currently Reading';
+  }
 
   const newBook = new Book(bookTitle, bookAuthor, bookPages, haveRead)
 
   if(myLibrary.length === 0) {
     currentIndex++;
     saveDataToLocalStorage(newBook);
-    incrementBooksRead();
-    updatePagesRead(newBook);
+    if(newBook.read === 'Finished Reading') {
+      incrementBooksRead();
+      updatePagesRead(newBook);
+    }
     displayBooks();
   } else{
     if(!containsBook(newBook, myLibrary)) {
       currentIndex++;
       saveDataToLocalStorage(newBook);
-      incrementBooksRead();
-      updatePagesRead(newBook);
+      if(newBook.read === 'Finished Reading') {
+        incrementBooksRead();
+        updatePagesRead(newBook);
+      }
       displayBooks();
     }
   }
@@ -63,8 +72,6 @@ function displayBooks() {
   
   let books = JSON.parse(localStorage.getItem('myLibrary')) || [];
 
-
-  
   for(let i = currentIndex; i < books.length; i++) {
     // Create a card for each book in library
     let card = document.createElement('div');
@@ -74,7 +81,10 @@ function displayBooks() {
     const author = document.createElement('p');
     const pages = document.createElement('p');
     const read = document.createElement('p');
+    const finishedReadingButton = document.createElement('button');
+    const markUnreadButton = document.createElement('button');
 
+  
     for(prop in books[i]) {
       switch(prop) {
         case 'title':
@@ -90,13 +100,52 @@ function displayBooks() {
           card.appendChild(pages);
           break;
         case 'read':
-          read.innerText = 'Finished Reading';
+          read.innerText = books[i][prop];
           card.appendChild(read);
           break;
         default:
           break;
       }
     }
+
+    finishedReadingButton.innerText = 'Mark Read';
+    markUnreadButton.innerText = 'Mark Not Read'
+    finishedReadingButton.classList.add('button');
+    finishedReadingButton.classList.add('button-completed');
+    markUnreadButton.classList.add('button');
+    markUnreadButton.classList.add('button-unread');
+    
+    if(read.innerText === 'Currently Reading') {
+      card.append(finishedReadingButton);
+      card.append(markUnreadButton);
+      markUnreadButton.classList.add('invisible');
+    } else {
+      card.append(markUnreadButton);
+      card.append(finishedReadingButton);
+      finishedReadingButton.classList.add('invisible');
+    }
+
+    finishedReadingButton.addEventListener('click', e => {
+      read.innerText = 'Finished Reading';
+      let currentPagesRead = Number(localStorage.getItem('pagesRead'));
+      currentPagesRead += Number(e.target.parentElement.children[2].innerText.split(' ')[0]);
+      localStorage.setItem('pagesRead', currentPagesRead);
+      pagesRead.innerText = currentPagesRead.toLocaleString();
+      incrementBooksRead();
+      finishedReadingButton.classList.add('invisible');
+      markUnreadButton.classList.remove('invisible');
+    })
+
+    markUnreadButton.addEventListener('click', e => {
+      read.innerText = 'Currently Reading';
+      let currentPagesRead = Number(localStorage.getItem('pagesRead'));
+      currentPagesRead -= Number(e.target.parentElement.children[2].innerText.split(' ')[0]);
+      localStorage.setItem('pagesRead', currentPagesRead);
+      pagesRead.innerText = currentPagesRead.toLocaleString();
+      decrementBooksRead();
+      markUnreadButton.classList.add('invisible');
+      finishedReadingButton.classList.remove('invisible');
+    })
 
     document.querySelector('.book-container').appendChild(card);
 
@@ -110,12 +159,20 @@ function incrementBooksRead() {
   booksRead.innerText = currentBooksRead.toLocaleString();
 }
 
+function decrementBooksRead() {
+  let currentBooksRead = Number(localStorage.getItem('booksRead'));
+  currentBooksRead--;
+  localStorage.setItem('booksRead', currentBooksRead);
+  booksRead.innerText = currentBooksRead.toLocaleString();
+}
+
 function updatePagesRead(book) {
   let currentPagesRead = Number(localStorage.getItem('pagesRead'));
   currentPagesRead += Number(book.pages);
   localStorage.setItem('pagesRead', currentPagesRead);
   pagesRead.innerText = currentPagesRead.toLocaleString();
 } 
+
 
 function displayStats() {
   booksRead.innerText =  Number(localStorage.getItem('booksRead')).toLocaleString();
@@ -124,17 +181,11 @@ function displayStats() {
 }
 
 function containsBook(data, library) {
-  console.log('TITLE: ', data.title);
-  // console.log('COMAPRE TITLE: ', library[0].title);
+
   for(let book of library) {
-    console.log('Current library book to compare ', book)
-    // console.log('sadjkfhl;dsafjklh ', Object.keys(data));
     if( data.title === book.title && data.author === book.author) {
-      console.log('true!');
       return true;
-    } else {
-      console.log('FALSE!');
-        }
+    } 
   }
   return false;
   
