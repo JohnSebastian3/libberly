@@ -2,6 +2,9 @@
 const addBookButton = document.querySelector('.add-book-button');
 const removeAllButton = document.querySelector('.remove-all-button');
 const modal = document.querySelector('.modal');
+const overlay = document.querySelector('.overlay');
+const btnCloseModal = document.querySelector('.close-modal');
+
 const submitButton = document.querySelector('#submit');
 const booksRead = document.querySelector('.books-read');
 const pagesRead = document.querySelector('.pages-read');
@@ -18,6 +21,12 @@ removeAllButton.addEventListener('click', () => {
   document.location.reload();
 });
 
+btnCloseModal.addEventListener('click', () => {
+  modal.classList.add('hidden');
+  overlay.classList.add('hidden');
+  overlay.classList.remove('opaque');
+  modal.classList.remove('opaque');
+})
 
 
 
@@ -37,9 +46,12 @@ function Book(title, author, pages, read) {
 }
 
 function addBookToLibrary() {
-  clearInputs();
+  overlay.classList.remove('opaque');
+  modal.classList.remove('opaque');
+  modal.classList.add('hidden');
+  overlay.classList.add('hidden');
   hideModal();
-
+  
   let inputs = document.querySelectorAll('input');
   let invalid = false;
   inputs.forEach(input => {
@@ -47,7 +59,7 @@ function addBookToLibrary() {
       invalid = true;
     }
   })
-
+  
   if(!invalid) {
 
     const bookTitle = titleInput.value;
@@ -80,12 +92,14 @@ function addBookToLibrary() {
           updatePagesRead(newBook);
         }
         displayBooks();
+      } else {
+        alert('This book is already in your Library!');
       }
     }
   } else {
     alert('Please enter all fields!');
   }
-
+  clearInputs();
 }
 
 function removeBookFromLibrary() {
@@ -183,7 +197,7 @@ function displayBooks() {
     card.appendChild(removeButton);
     card.setAttribute('data-index', dataIndex);
     document.querySelector('.book-container').appendChild(card);
-    
+
     removeButton.addEventListener('click', e => {
       let currentPagesRead = Number(localStorage.getItem('pagesRead'));
       currentPagesRead -= Number(e.target.parentElement.children[2].innerText.split(' ')[0]);
@@ -191,11 +205,18 @@ function displayBooks() {
       pagesRead.innerText = currentPagesRead.toLocaleString();
       const index = e.target.parentElement.getAttribute('data-index');
       const currentLib = JSON.parse(localStorage.getItem('myLibrary'));
-      currentLib.splice(index, 2);
+      currentLib.splice(index, 1);
       localStorage.setItem('myLibrary', JSON.stringify(currentLib));
       decrementBooksRead();
       e.target.parentElement.remove();
       myLibrary = JSON.parse(localStorage.getItem('myLibrary'))
+      let cards = document.querySelectorAll('.card');
+      for(let i = 0; i < cards.length; i++) {
+        cards[i].setAttribute('data-index', i);
+      }
+      cards.forEach(card => {
+        console.log(card);
+      })
       currentIndex--;
       dataIndex--;
       console.log(currentIndex);
@@ -253,11 +274,17 @@ function hideModal() {
 }
 
 function clearInputs() {
-  
+  titleInput.value = '';
+  authorInput.value = '';
+  pageInput.value = '';
 }
 
 function requestBook() {
+  clearInputs();
+  overlay.classList.remove('hidden');
   modal.classList.remove('hidden');
+  overlay.classList.add('opaque');
+  modal.classList.add('opaque');
 }
 
 
