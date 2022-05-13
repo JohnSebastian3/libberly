@@ -1,24 +1,31 @@
-
+// OUR ELEMENTS
 const addBookButton = document.querySelector('.add-book-button');
 const removeAllButton = document.querySelector('.remove-all-button');
 const modal = document.querySelector('.modal');
 const overlay = document.querySelector('.overlay');
 const btnCloseModal = document.querySelector('.close-modal');
-
 const submitButton = document.querySelector('#submit');
 const booksRead = document.querySelector('.books-read');
 const pagesRead = document.querySelector('.pages-read');
-
 const titleInput = document.querySelector('#book-title');
 const authorInput = document.querySelector('#book-author');
 const pageInput = document.querySelector('#book-pages');
 
+
+// EVENT LISTENERS 
+// Open modal and form to add book
 addBookButton.addEventListener('click', requestBook);
+
+// Submit the form and add book to library and local storage
 submitButton.addEventListener('click', addBookToLibrary);
 
+// Clear local storage, reload the page to start from a fresh library
 removeAllButton.addEventListener('click', () => {
-  localStorage.clear();
-  document.location.reload();
+  const response = prompt('Are you sure you want to clear your library? If so, click OK. If not, click Cancel.');
+  if(!(response === null)) {
+    localStorage.clear();
+    document.location.reload();
+  }
 });
 
 btnCloseModal.addEventListener('click', hideModal)
