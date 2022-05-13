@@ -6,6 +6,9 @@ const submitButton = document.querySelector('#submit');
 const booksRead = document.querySelector('.books-read');
 const pagesRead = document.querySelector('.pages-read');
 
+const titleInput = document.querySelector('#book-title');
+const authorInput = document.querySelector('#book-author');
+const pageInput = document.querySelector('#book-pages');
 
 addBookButton.addEventListener('click', requestBook);
 submitButton.addEventListener('click', addBookToLibrary);
@@ -16,7 +19,10 @@ removeAllButton.addEventListener('click', () => {
 });
 
 
+
+
 let currentIndex = 0;
+let dataIndex = -1;
 let myLibrary = JSON.parse(localStorage.getItem('myLibrary')) || [];
 displayStats();
 displayBooks();
@@ -31,31 +37,33 @@ function Book(title, author, pages, read) {
 }
 
 function addBookToLibrary() {
+  clearInputs();
   hideModal();
 
-  const bookTitle = document.querySelector('#book-title').value;
-  const bookAuthor = document.querySelector('#book-author').value;
-  const bookPages = document.querySelector('#book-pages').value;
-  let haveRead = document.querySelector('#have-read');
-
-  if(haveRead.checked) {
-    haveRead = 'Finished Reading';
-  } else {
-    haveRead = 'Currently Reading';
-  }
-
-  const newBook = new Book(bookTitle, bookAuthor, bookPages, haveRead)
-
-  if(myLibrary.length === 0) {
-    currentIndex++;
-    saveDataToLocalStorage(newBook);
-    if(newBook.read === 'Finished Reading') {
-      incrementBooksRead();
-      updatePagesRead(newBook);
+  let inputs = document.querySelectorAll('input');
+  let invalid = false;
+  inputs.forEach(input => {
+    if(input.value === "") {
+      invalid = true;
     }
-    displayBooks();
-  } else{
-    if(!containsBook(newBook, myLibrary)) {
+  })
+
+  if(!invalid) {
+
+    const bookTitle = titleInput.value;
+    const bookAuthor = authorInput.value;
+    const bookPages = pageInput.value;
+    let haveRead = document.querySelector('#have-read');
+  
+    if(haveRead.checked) {
+      haveRead = 'Finished Reading';
+    } else {
+      haveRead = 'Currently Reading';
+    }
+  
+    const newBook = new Book(bookTitle, bookAuthor, bookPages, haveRead)
+  
+    if(myLibrary.length === 0) {
       currentIndex++;
       saveDataToLocalStorage(newBook);
       if(newBook.read === 'Finished Reading') {
@@ -63,8 +71,24 @@ function addBookToLibrary() {
         updatePagesRead(newBook);
       }
       displayBooks();
+    } else{
+      if(!containsBook(newBook, myLibrary)) {
+        currentIndex++;
+        saveDataToLocalStorage(newBook);
+        if(newBook.read === 'Finished Reading') {
+          incrementBooksRead();
+          updatePagesRead(newBook);
+        }
+        displayBooks();
+      }
     }
+  } else {
+    alert('Please enter all fields!');
   }
+
+}
+
+function removeBookFromLibrary() {
 
 }
 
@@ -83,6 +107,9 @@ function displayBooks() {
     const read = document.createElement('p');
     const finishedReadingButton = document.createElement('button');
     const markUnreadButton = document.createElement('button');
+    const removeButton = document.createElement('button');
+
+    removeButton.classList.add('button');
 
   
     for(prop in books[i]) {
@@ -107,6 +134,8 @@ function displayBooks() {
           break;
       }
     }
+
+    dataIndex++;
 
     finishedReadingButton.innerText = 'Mark Read';
     markUnreadButton.innerText = 'Mark Not Read'
@@ -147,7 +176,30 @@ function displayBooks() {
       finishedReadingButton.classList.remove('invisible');
     })
 
+    removeButton.innerText = 'Remove';
+    removeButton.classList.add('button');
+    removeButton.classList.add('remove-button');
+
+    card.appendChild(removeButton);
+    card.setAttribute('data-index', dataIndex);
     document.querySelector('.book-container').appendChild(card);
+    
+    removeButton.addEventListener('click', e => {
+      let currentPagesRead = Number(localStorage.getItem('pagesRead'));
+      currentPagesRead -= Number(e.target.parentElement.children[2].innerText.split(' ')[0]);
+      localStorage.setItem('pagesRead', currentPagesRead);
+      pagesRead.innerText = currentPagesRead.toLocaleString();
+      const index = e.target.parentElement.getAttribute('data-index');
+      const currentLib = JSON.parse(localStorage.getItem('myLibrary'));
+      currentLib.splice(index, 2);
+      localStorage.setItem('myLibrary', JSON.stringify(currentLib));
+      decrementBooksRead();
+      e.target.parentElement.remove();
+      myLibrary = JSON.parse(localStorage.getItem('myLibrary'))
+      currentIndex--;
+      dataIndex--;
+      console.log(currentIndex);
+    });
 
   }
 }
@@ -200,6 +252,9 @@ function hideModal() {
   modal.classList.add('hidden');
 }
 
+function clearInputs() {
+  
+}
 
 function requestBook() {
   modal.classList.remove('hidden');
