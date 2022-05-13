@@ -39,21 +39,21 @@
     <form class="form">
       <div class="input-control">
         <label for="book-title">Book Title</label>
-        <input type="text" id="book-title" name="book-title" required/>
+        <input type="text" id="book-title" name="book-title" placeholder="e.g. 'The Lord of The Rings'"/>
       </div>
       <div class="input-control">
         <label for="book-author">Author</label>
-        <input type="text" id="book-author" name="book-author" required/>
+        <input type="text" id="book-author" name="book-author" placeholder="e.g J.R.R Tolkien"/>
       </div>
       <div class="input-control">
         <label for="book-pages">Number of Pages</label>
-        <input type="number" id="book-pages" name="book-pages" required/>
+        <input type="number" id="book-pages" name="book-pages"/>
       </div>
-      <div class="input-control">
-        <label for="have-read">I have finished reading this book</label>
-        <input type="checkbox" id="have-read" name="have-read" />
+      <div class="input-control checkbox">
+        <label for="have-read">Finished Reading?</label>
+        <input type="checkbox" id="have-read" name="have-read" checked />
       </div>
-      <button type="button" id="submit">Add</button>
+      <button type="submit" id="submit" class="button button-add">Add</button>
     </form>
   </div>
  
