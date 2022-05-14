@@ -103,7 +103,7 @@ function addBookToLibrary() {
 
 }
 
-
+// Populate the book cards and display them in a grid, one by one
 function displayBooks() {
   
   let books = JSON.parse(localStorage.getItem('myLibrary')) || [];
@@ -126,32 +126,11 @@ function displayBooks() {
     removeButton.classList.add('button');
 
     // Populate card with info
-    for(prop in books[i]) {
-      switch(prop) {
-        case 'title':
-          title.innerText = books[i][prop];
-          card.appendChild(title);
-          break;
-        case 'author':
-          author.innerText = books[i][prop];
-          card.appendChild(author);
-          break;
-        case 'pages':
-          pages.innerText = books[i][prop] + ' pages';
-          card.appendChild(pages);
-          break;
-        case 'read':
-          read.innerText = books[i][prop];
-          card.appendChild(read);
-          break;
-        default:
-          break;
-      }
-    }
-
+    populateCard(card, books[i], title, author, pages, read);
+    
     dataIndex++;
-
     styleCardButtons(finishedReadingButton, markUnreadButton);
+
     
     // Determine whether to show the button to mark book as read
     // or the button to mark book as unread
@@ -162,7 +141,14 @@ function displayBooks() {
       appendButtons(card, finishedReadingButton, markUnreadButton);
       finishedReadingButton.classList.add('invisible');
     }
-
+    
+    styleRemoveButton(removeButton) 
+    
+    card.appendChild(removeButton);
+    card.setAttribute('data-index', dataIndex);
+    document.querySelector('.book-container').appendChild(card);
+    
+    // EVENT LISTENERES
     // Each status change button in each card needs these event listener
     finishedReadingButton.addEventListener('click', e => {
       handleReadStatusChange(e, read, finishedReadingButton, markUnreadButton);
@@ -172,64 +158,68 @@ function displayBooks() {
       handleReadStatusChange(e, read, finishedReadingButton, markUnreadButton);
     })
 
-    removeButton.innerText = 'Remove';
-    removeButton.classList.add('button');
-    removeButton.classList.add('remove-button');
-
-    card.appendChild(removeButton);
-    card.setAttribute('data-index', dataIndex);
-    document.querySelector('.book-container').appendChild(card);
-
     removeButton.addEventListener('click', e => {
-      console.log(read.innerText);
       if(read.innerText === 'Finished Reading') {
-        let currentPagesRead = Number(localStorage.getItem('pagesRead'));
-        currentPagesRead -= Number(e.target.parentElement.children[2].innerText.split(' ')[0]);
-        localStorage.setItem('pagesRead', currentPagesRead);
-        pagesRead.innerText = currentPagesRead.toLocaleString();
+        updatePagesRead(e, '-');
         decrementBooksRead();
       }
-      const index = e.target.parentElement.getAttribute('data-index');
-      const currentLib = JSON.parse(localStorage.getItem('myLibrary'));
-      currentLib.splice(index, 1);
-      localStorage.setItem('myLibrary', JSON.stringify(currentLib));
-      e.target.parentElement.remove();
-      myLibrary = JSON.parse(localStorage.getItem('myLibrary'))
-      let cards = document.querySelectorAll('.card');
-      for(let i = 0; i < cards.length; i++) {
-        cards[i].setAttribute('data-index', i);
-      }
-      cards.forEach(card => {
-        console.log(card);
-      })
+
+      handleBookRemoval(e);
+      setCardDataAttriute();
+    
+      // Since we removed a book, we need to go back one index
       currentIndex--;
       dataIndex--;
-      console.log(currentIndex);
     });
 
   }
 }
 
-function handleReadStatusChange(e, read, readButton, unreadButton) {
 
-  let currentPagesRead = Number(localStorage.getItem('pagesRead'));
+function populateCard(card, book, title, author, pages, read) {
+  for(prop in book) {
+    switch(prop) {
+      case 'title':
+        title.innerText = book[prop];
+        card.appendChild(title);
+        break;
+      case 'author':
+        author.innerText = book[prop];
+        card.appendChild(author);
+        break;
+      case 'pages':
+        pages.innerText = book[prop] + ' pages';
+        card.appendChild(pages);
+        break;
+      case 'read':
+        read.innerText = book[prop];
+        card.appendChild(read);
+        break;
+      default:
+        break;
+    }
+  }
+}
+
+// Increase or decrease book count and page count depending on
+// whether we hit the mark as read
+// or mark as unread button
+function handleReadStatusChange(e, read, readButton, unreadButton) {
 
   if(e.target.innerText === 'Mark Read') {;
     read.innerText = 'Finished Reading';
-    currentPagesRead += Number(e.target.parentElement.children[2].innerText.split(' ')[0]);
+    updatePagesRead(e, '+');
     incrementBooksRead();
     readButton.classList.add('invisible');
     unreadButton.classList.remove('invisible');
   } else {
     read.innerText = 'Currently Reading';
-    currentPagesRead -= Number(e.target.parentElement.children[2].innerText.split(' ')[0]);
+    updatePagesRead(e, '-');
     decrementBooksRead();
     unreadButton.classList.add('invisible');
     readButton.classList.remove('invisible');
   }
   
-  localStorage.setItem('pagesRead', currentPagesRead);
-  pagesRead.innerText = currentPagesRead.toLocaleString();
 
 }
 
@@ -241,14 +231,35 @@ function handleBookAddition(book) {
   displayBooks();
 }
 
+function handleBookRemoval(e) {
+ 
+  // Find book which matches index of the HTML book card,
+  // and remove it from local storage and from the display
+  const index = e.target.parentElement.getAttribute('data-index');
+  const currentLib = JSON.parse(localStorage.getItem('myLibrary'));
+  currentLib.splice(index, 1);
+  localStorage.setItem('myLibrary', JSON.stringify(currentLib));
+  e.target.parentElement.remove();
+}
+
 // If we checked Finished Reading, then
 // we update stats, otherwise we don't
 function updateStatsIfFinished(book) {
   if(book.read === 'Finished Reading') {
     incrementBooksRead();
-    updatePagesRead(book);
+    updatePages(book);
   }
 } 
+
+// Set a data attribute on each generated card, from 0 to n
+// where n is current number of books in library
+function setCardDataAttriute() {
+  myLibrary = JSON.parse(localStorage.getItem('myLibrary'))
+  let cards = document.querySelectorAll('.card');
+  for(let i = 0; i < cards.length; i++) {
+    cards[i].setAttribute('data-index', i);
+  }
+}
 
 function incrementBooksRead() {
   let currentBooksRead = Number(localStorage.getItem('booksRead'));
@@ -264,7 +275,23 @@ function decrementBooksRead() {
   booksRead.innerText = currentBooksRead.toLocaleString();
 }
 
-function updatePagesRead(book) {
+// Helper function to icrease/decrease pages read in local storage and DOM
+function updatePagesRead(e, op) {
+
+  let currentPagesRead = Number(localStorage.getItem('pagesRead'));
+
+  if(op === '+') {
+    currentPagesRead += Number(e.target.parentElement.children[2].innerText.split(' ')[0]);
+  } else {
+    currentPagesRead -= Number(e.target.parentElement.children[2].innerText.split(' ')[0]);
+  }
+
+  localStorage.setItem('pagesRead', currentPagesRead);
+  pagesRead.innerText = currentPagesRead.toLocaleString();
+}
+
+// Update pages read by completion of specific book
+function updatePages(book) {
   let currentPagesRead = Number(localStorage.getItem('pagesRead'));
   currentPagesRead += Number(book.pages);
   localStorage.setItem('pagesRead', currentPagesRead);
@@ -277,6 +304,7 @@ function displayStats() {
   pagesRead.innerText =  Number(localStorage.getItem('pagesRead')).toLocaleString();
 
 }
+
 
 function containsBook(data, library) {
   for(let book of library) {
@@ -292,10 +320,12 @@ function containsBook(data, library) {
   return false;
 }
 
+
 function saveDataToLocalStorage(data) {
   myLibrary.push(data);
   localStorage.setItem('myLibrary', JSON.stringify(myLibrary));
 }
+
 
 function styleCardButtons(read, unread) {
   read.innerText = 'Mark Read';
@@ -306,16 +336,26 @@ function styleCardButtons(read, unread) {
   unread.classList.add('button-unread');
 }
 
+
+function styleRemoveButton(button) {
+  button.innerText = 'Remove';
+  button.classList.add('button');
+  button.classList.add('remove-button');
+}
+
+// Refresh form
 function clearInputs() {
   titleInput.value = '';
   authorInput.value = '';
   pageInput.value = '';
 }
 
+// Show form
 function requestBook() {
   clearInputs();
   showModal();
 }
+
 
 function showModal() {
   modal.classList.remove('hidden');
