@@ -64,7 +64,8 @@ function addBookToLibrary() {
 
   hideModal();
   
-  // Only run if we have valid form information
+  // Only run if we have valid form information, otherwise alert
+  // user they are missing information, and refresh form
   if(verifyInputs()) {
 
     const bookTitle = titleInput.value;
@@ -82,21 +83,13 @@ function addBookToLibrary() {
     const newBook = new Book(bookTitle, bookAuthor, bookPages, haveRead)
   
     // If first book, add. If not the first, check whether we have
-    // a duplicate
+    // a duplicate. If duplicate, alert user
     if(myLibrary.length === 0) { 
-
-      currentIndex++;
-      saveDataToLocalStorage(newBook);
-      updateStatsIfFinished(newBook);
-      displayBooks();
-
+      handleBookAddition(newBook);
     } else{
 
       if(!containsBook(newBook, myLibrary)) {
-        currentIndex++;
-        saveDataToLocalStorage(newBook);
-        updateStatsIfFinished(newBook);
-        displayBooks();
+        handleBookAddition(newBook);
       } else {
         alert('This book is already in your Library!');
       }
@@ -107,11 +100,9 @@ function addBookToLibrary() {
   }
 
   clearInputs();
-}
-
-function removeBookFromLibrary() {
 
 }
+
 
 function displayBooks() {
   
@@ -122,17 +113,19 @@ function displayBooks() {
     let card = document.createElement('div');
     card.classList.add('card');
 
+    // Create info which will populate card 
     const title = document.createElement('p');
     const author = document.createElement('p');
     const pages = document.createElement('p');
     const read = document.createElement('p');
+
+    // Buttons in card
     const finishedReadingButton = document.createElement('button');
     const markUnreadButton = document.createElement('button');
     const removeButton = document.createElement('button');
-
     removeButton.classList.add('button');
 
-  
+    // Populate card with info
     for(prop in books[i]) {
       switch(prop) {
         case 'title':
@@ -158,43 +151,25 @@ function displayBooks() {
 
     dataIndex++;
 
-    finishedReadingButton.innerText = 'Mark Read';
-    markUnreadButton.innerText = 'Mark Not Read'
-    finishedReadingButton.classList.add('button');
-    finishedReadingButton.classList.add('button-completed');
-    markUnreadButton.classList.add('button');
-    markUnreadButton.classList.add('button-unread');
+    styleCardButtons(finishedReadingButton, markUnreadButton);
     
+    // Determine whether to show the button to mark book as read
+    // or the button to mark book as unread
     if(read.innerText === 'Currently Reading') {
-      card.append(finishedReadingButton);
-      card.append(markUnreadButton);
+      appendButtons(card, finishedReadingButton, markUnreadButton);
       markUnreadButton.classList.add('invisible');
     } else {
-      card.append(markUnreadButton);
-      card.append(finishedReadingButton);
+      appendButtons(card, finishedReadingButton, markUnreadButton);
       finishedReadingButton.classList.add('invisible');
     }
 
+    // Each status change button in each card needs these event listener
     finishedReadingButton.addEventListener('click', e => {
-      read.innerText = 'Finished Reading';
-      let currentPagesRead = Number(localStorage.getItem('pagesRead'));
-      currentPagesRead += Number(e.target.parentElement.children[2].innerText.split(' ')[0]);
-      localStorage.setItem('pagesRead', currentPagesRead);
-      pagesRead.innerText = currentPagesRead.toLocaleString();
-      incrementBooksRead();
-      finishedReadingButton.classList.add('invisible');
-      markUnreadButton.classList.remove('invisible');
+      handleReadStatusChange(e, read, finishedReadingButton, markUnreadButton);
     })
 
     markUnreadButton.addEventListener('click', e => {
-      read.innerText = 'Currently Reading';
-      let currentPagesRead = Number(localStorage.getItem('pagesRead'));
-      currentPagesRead -= Number(e.target.parentElement.children[2].innerText.split(' ')[0]);
-      localStorage.setItem('pagesRead', currentPagesRead);
-      pagesRead.innerText = currentPagesRead.toLocaleString();
-      decrementBooksRead();
-      markUnreadButton.classList.add('invisible');
-      finishedReadingButton.classList.remove('invisible');
+      handleReadStatusChange(e, read, finishedReadingButton, markUnreadButton);
     })
 
     removeButton.innerText = 'Remove';
@@ -206,6 +181,7 @@ function displayBooks() {
     document.querySelector('.book-container').appendChild(card);
 
     removeButton.addEventListener('click', e => {
+      console.log(read.innerText);
       if(read.innerText === 'Finished Reading') {
         let currentPagesRead = Number(localStorage.getItem('pagesRead'));
         currentPagesRead -= Number(e.target.parentElement.children[2].innerText.split(' ')[0]);
@@ -232,6 +208,37 @@ function displayBooks() {
     });
 
   }
+}
+
+function handleReadStatusChange(e, read, readButton, unreadButton) {
+
+  let currentPagesRead = Number(localStorage.getItem('pagesRead'));
+
+  if(e.target.innerText === 'Mark Read') {;
+    read.innerText = 'Finished Reading';
+    currentPagesRead += Number(e.target.parentElement.children[2].innerText.split(' ')[0]);
+    incrementBooksRead();
+    readButton.classList.add('invisible');
+    unreadButton.classList.remove('invisible');
+  } else {
+    read.innerText = 'Currently Reading';
+    currentPagesRead -= Number(e.target.parentElement.children[2].innerText.split(' ')[0]);
+    decrementBooksRead();
+    unreadButton.classList.add('invisible');
+    readButton.classList.remove('invisible');
+  }
+  
+  localStorage.setItem('pagesRead', currentPagesRead);
+  pagesRead.innerText = currentPagesRead.toLocaleString();
+
+}
+
+// Update local storage, index, stats, and display
+function handleBookAddition(book) {
+  currentIndex++;
+  saveDataToLocalStorage(book);
+  updateStatsIfFinished(book);
+  displayBooks();
 }
 
 // If we checked Finished Reading, then
@@ -290,6 +297,15 @@ function saveDataToLocalStorage(data) {
   localStorage.setItem('myLibrary', JSON.stringify(myLibrary));
 }
 
+function styleCardButtons(read, unread) {
+  read.innerText = 'Mark Read';
+  unread.innerText = 'Mark Not Read'
+  read.classList.add('button');
+  read.classList.add('button-completed');
+  unread.classList.add('button');
+  unread.classList.add('button-unread');
+}
+
 function clearInputs() {
   titleInput.value = '';
   authorInput.value = '';
@@ -326,6 +342,11 @@ function verifyInputs() {
     }
   })
   return isValid;
+}
+
+function appendButtons(card, read, unread) {
+  card.append(read);
+  card.append(unread);
 }
 
 localStorage.setItem('myLibrary', JSON.stringify(myLibrary));
