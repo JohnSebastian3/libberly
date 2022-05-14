@@ -1,12 +1,17 @@
 // OUR ELEMENTS
+// Buttons, modal, overlay
 const addBookButton = document.querySelector('.add-book-button');
 const removeAllButton = document.querySelector('.remove-all-button');
 const modal = document.querySelector('.modal');
 const overlay = document.querySelector('.overlay');
 const btnCloseModal = document.querySelector('.close-modal');
 const submitButton = document.querySelector('#submit');
+
+// Elements where we will store our stats
 const booksRead = document.querySelector('.books-read');
 const pagesRead = document.querySelector('.pages-read');
+
+// Input elements
 const titleInput = document.querySelector('#book-title');
 const authorInput = document.querySelector('#book-author');
 const pageInput = document.querySelector('#book-pages');
@@ -28,16 +33,22 @@ removeAllButton.addEventListener('click', () => {
   }
 });
 
+// Close the modal and go back to seeing your library
 btnCloseModal.addEventListener('click', hideModal)
 
 
-
+// Keep track of how many books we have added thus far
 let currentIndex = 0;
+
+// This is to be able to access each book card when we want to remove them                      
 let dataIndex = -1;
+
+// Initialize our library by accessing local storage 
 let myLibrary = JSON.parse(localStorage.getItem('myLibrary')) || [];
 displayStats();
 displayBooks();
 
+// This is to display books on load
 currentIndex = myLibrary.length - 1;
 
 function Book(title, author, pages, read) {
@@ -47,22 +58,14 @@ function Book(title, author, pages, read) {
   this.read = read;
 }
 
+// Runs when we click the "Add" button on the form. Adds the
+// book to the display, as well as local storage.
 function addBookToLibrary() {
-  overlay.classList.remove('opaque');
-  modal.classList.remove('opaque');
-  modal.classList.add('hidden');
-  overlay.classList.add('hidden');
+
   hideModal();
   
-  let inputs = document.querySelectorAll('input');
-  let invalid = false;
-  inputs.forEach(input => {
-    if(input.value === "") {
-      invalid = true;
-    }
-  })
-  
-  if(!invalid) {
+  // Only run if we have valid form information
+  if(verifyInputs()) {
 
     const bookTitle = titleInput.value;
     const bookAuthor = authorInput.value;
@@ -75,32 +78,34 @@ function addBookToLibrary() {
       haveRead = 'Currently Reading';
     }
   
+    // This book will be added to local storage
     const newBook = new Book(bookTitle, bookAuthor, bookPages, haveRead)
   
-    if(myLibrary.length === 0) {
+    // If first book, add. If not the first, check whether we have
+    // a duplicate
+    if(myLibrary.length === 0) { 
+
       currentIndex++;
       saveDataToLocalStorage(newBook);
-      if(newBook.read === 'Finished Reading') {
-        incrementBooksRead();
-        updatePagesRead(newBook);
-      }
+      updateStatsIfFinished(newBook);
       displayBooks();
+
     } else{
+
       if(!containsBook(newBook, myLibrary)) {
         currentIndex++;
         saveDataToLocalStorage(newBook);
-        if(newBook.read === 'Finished Reading') {
-          incrementBooksRead();
-          updatePagesRead(newBook);
-        }
+        updateStatsIfFinished(newBook);
         displayBooks();
       } else {
         alert('This book is already in your Library!');
       }
+
     }
   } else {
     alert('Please enter all fields!');
   }
+
   clearInputs();
 }
 
@@ -229,6 +234,15 @@ function displayBooks() {
   }
 }
 
+// If we checked Finished Reading, then
+// we update stats, otherwise we don't
+function updateStatsIfFinished(book) {
+  if(book.read === 'Finished Reading') {
+    incrementBooksRead();
+    updatePagesRead(book);
+  }
+} 
+
 function incrementBooksRead() {
   let currentBooksRead = Number(localStorage.getItem('booksRead'));
   currentBooksRead++;
@@ -258,26 +272,22 @@ function displayStats() {
 }
 
 function containsBook(data, library) {
-
   for(let book of library) {
+
+    // I assume that same title and author equals same book
+    // The reason that I don't include pages is because different
+    // editions of books can have different number of pages
     if( data.title === book.title && data.author === book.author) {
       return true;
     } 
+
   }
   return false;
-  
 }
 
 function saveDataToLocalStorage(data) {
   myLibrary.push(data);
   localStorage.setItem('myLibrary', JSON.stringify(myLibrary));
-}
-
-function hideModal() {
-  modal.classList.add('hidden');
-  overlay.classList.add('hidden');
-  overlay.classList.remove('opaque');
-  modal.classList.remove('opaque');
 }
 
 function clearInputs() {
@@ -288,11 +298,34 @@ function clearInputs() {
 
 function requestBook() {
   clearInputs();
-  overlay.classList.remove('hidden');
-  modal.classList.remove('hidden');
-  overlay.classList.add('opaque');
-  modal.classList.add('opaque');
+  showModal();
 }
 
+function showModal() {
+  modal.classList.remove('hidden');
+  overlay.classList.remove('hidden');
+  overlay.classList.add('shown');
+  modal.classList.add('shown');
+  modal.classList.add('popup');
+}
+
+function hideModal() {
+  modal.classList.add('hidden');
+  overlay.classList.add('hidden');
+  overlay.classList.remove('shown');
+  modal.classList.remove('shown');
+  modal.classList.remove('popup');
+}
+
+function verifyInputs() {
+  let inputs = document.querySelectorAll('input');
+  let isValid = true;
+  inputs.forEach(input => {
+    if(input.value === "") {
+      isValid = false;
+    }
+  })
+  return isValid;
+}
 
 localStorage.setItem('myLibrary', JSON.stringify(myLibrary));
