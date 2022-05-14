@@ -145,17 +145,18 @@ body {
 /* FORM */
 .modal {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  top: 30%;
+  left: 35%;
+
   width: 30%;
   margin: 0 auto;
   background-color: white;
   border-radius: 10px;
   padding: 3rem;
   z-index: 10;
-  transition: opacity 400ms;
   opacity: 0;
+  transform: scale(0);
+  transition: opacity 400ms, transform 400ms;
 }
 .overlay {
   position: absolute;
@@ -205,8 +206,12 @@ body {
   visibility: hidden;
 }
 
-.opaque {
+.shown {
   opacity: 1;
+}
+
+.popup {
+  transform: scale(1);
 }
 
 .invisible {
