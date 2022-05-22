@@ -3,7 +3,7 @@ Libberly is a simple-to-use Library application. You can store your finished and
 
 **Link to project:** https://johnsebastian3.github.io/libberly/
 
-![alt tag](portfoliogif.gif)
+![alt tag](libgif.gif)
 
 ## How It's Made:
 
